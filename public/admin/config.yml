@@ -41,6 +41,12 @@ collections:
           - label: "GitHub account"
             name: "github_account"
             widget: "string"
+          - label: "LinkedIn account"
+            name: "linkedin_account"
+            widget: "string"
+          - label: "Email"
+            name: "email"
+            widget: "string"
 
   - name: "meta"
     label: "Meta"
