@@ -15,11 +15,13 @@ that need to be sorted can top 10 million. At that scale, the efficiency of our 
 We'll take a look at our basic sorting algorithms and try to parse out the runtime efficiency of each. Note that the implementation
 of these algorithms will be in Java, but you can implement them in any coding language. 
 
+## The Problem
+
 Before we start, think about this problem: 
 - Given a list of unsorted objects, design an algorithm to efficienctly put them into sorted order. 
 
 Now there are a few questions you should think of right off the bat: 
-1. What are our objects? Are the letters, numbers, words, things? 
+### 1. What are our objects? Are the letters, numbers, words, things? 
 
 This is a good question because it can dictate your actual sorting mechanism. Letters need to be sorted alphabetically or lexigraphically, 
 numbers need to be sorted numerically. If it's a collection of object, you'll need to use an `equals()` method to determine order. 
@@ -27,21 +29,21 @@ Whenever you come across a sorting problem, always ask yourself what you are sor
 
 In our case, let's assume they are positive integers. 
 
-2. What is sorted order? Is it ascending or descending? 
+### 2. What is sorted order? Is it ascending or descending? 
 
 Ascending order means that elements to the left are smaller than elements to the right. Another way to say this is as we traverse along 
-the list, the elements ascend or get larger. This can be written as follows: ```java 0 <= i <= n - 1; array[i] <= array[i + 1]```
+the list, the elements ascend or get larger. This can be written as follows: ``` 0 <= i <= n - 1; array[i] <= array[i + 1]```
 
 Descending order means that elements to the left are larger than elements to the right. As you traverse along the list, elements will descend in value
-or get smalled. This can be wrtten as: ```java 0 <= i <= n - 1; array[i] >= array[i + 1]```
+or get smalled. This can be wrtten as: ``` 0 <= i <= n - 1; array[i] >= array[i + 1]```
 
 For our problem, let's assume we want the integers sorted into _ascending_ order. 
 
 With these points clarified, how would you go about solving this problem? 
 
-Say your list of integers is ```java [6, 5, 1, 4, 3]```. How would you sort these? 
+Say your list of integers is ```java [6, 5, 1, 4, 3]```. How would you sort these? Take some time and think about how you would form a solution....
 
-Let's start with the most basic approach: selection sort. 
+With some ideas in mind, let's take a look at the most intuitive approach: selection sort. 
 
 ## Selection Sort
 
