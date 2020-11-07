@@ -32,7 +32,7 @@ In our case, let's assume they are positive integers.
 Ascending order means that elements to the left are smaller than elements to the right. Another way to say this is as we traverse along 
 the list, the elements ascend or get larger. This can be written as follows: ```java 0 <= i <= n - 1; array[i] <= array[i + 1]```
 
-Descneding order means that elements to the left are larger than elements to the right. As you traverse along the list, elements will descend in value
+Descending order means that elements to the left are larger than elements to the right. As you traverse along the list, elements will descend in value
 or get smalled. This can be wrtten as: ```java 0 <= i <= n - 1; array[i] >= array[i + 1]```
 
 For our problem, let's assume we want the integers sorted into _ascending_ order. 
@@ -46,12 +46,14 @@ Let's start with the most basic approach: selection sort.
 ## Selection Sort
 
 This algorithm partiitons the input list into two parts. One partition is the already sorted sublist and the second partition is the sublist of remaining elements to be 
-sorted. The algorithm will work its way across the list form left to right, finding the smallest element in the list and swapping it with the leftmost unsorted element
+sorted. The algorithm will work its way across the list form left to right, finding the smallest element in the list, swapping it with the leftmost unsorted element,
 and updating the boundaries of the sublists. It will repeat this iteration until the whole list is sorted. 
 
-It looks something like this: 
+![Selection Sort](https://www.codingconnect.net/wp-content/uploads/2016/09/Selection-Sort.gif)
 
-To implement this, we'll need some pieces of functionality. 
+### Implementation
+
+To implement this sorting algorithm, we'll need a few pieces of functionality. 
 1. We'll need a method to swap array elements. 
 
 This could be achieved simply: 
@@ -100,7 +102,7 @@ public class Sort {
         arr[j] = temp;
     }
 
-    private static void printArrayOf(int[] arr) {
+        private static void printArrayOf(int[] arr) {
         for (int value : arr) {
             System.out.print(" " + value + " ");
         }
