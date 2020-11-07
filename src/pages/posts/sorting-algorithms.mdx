@@ -54,7 +54,7 @@ and updating the boundaries of the sublists. It will repeat this iteration until
 ### Implementation
 
 To implement this sorting algorithm, we'll need a few pieces of functionality. 
-1. We'll need a method to swap array elements. 
+1. We'll need a method to swap array elements so that we can move the lowest element in the unsorted list to the leftmost index. 
 
 This could be achieved simply: 
 ```java
@@ -69,11 +69,11 @@ public static void swap(int i, int j, int[] arr) {
 2. We'll need a way to iterate over the array multiple times, while keeping track of the two sub arrays. 
 
 We can use a nested for loop to achieve this. The outer for loop will allow use to iterate over every element in the array while the inner for loop will 
-allow us to iterate over all of the so far unsorted elements. 
+allow us to iterate over all of the so-far unsorted elements. 
 
 3. We'll want to keep track of some sort of running minimum as we're iterating over the unsorted items. 
 
-When all of this comes to gether it looks something like this: 
+When all of this comes together our algorithm will look like this: 
 
 ```java
 public class Sort {
@@ -113,14 +113,216 @@ public class Sort {
 ```
 
 The runtime complexity of this sorting algortihm is O(n^2) where n is the size of the list. This is because for every item in the list, we have to visit every item, thus we have to visit n^2 items.
-This is not very efficient.  
-
-### How it works? 
+This, unfortunately, is not very efficient. 
 
 ## Bubble Sort
 
+Our next most common sorting algorithm is Bubble Sort. Bubble sort compares two adjacent elements and swaps them if they are not in the desired order. It continues until the list is sorted. 
+Another way to think about  this is to imagine a sliding window of size 2, moving down the array and comparing the elements in the window. 
+
+Below is a visual representation of bubble sort: 
+
+![Bubble Sort](https://upload.wikimedia.org/wikipedia/commons/c/c8/Bubble-sort-example-300px.gif)
+
+When wathcing this visual, notice how the largest element will get shifted to the rightmost postion for every pass over the array. This is where bubble sort gets its name, as the 
+largest elements "bubble up" to the end of the list with each pass. 
+
+### Implementation 
+
+Bubble sort requires looping over the list as well as swapping elements when they are out of order. Thus we'll need our `swap()` method from the Selection Sort implementation and also 
+the familiar nested for loops. 
+
+```java
+    
+ public class Sort {   
+
+    public static void main(String[] args) {
+        int[] unsorted = { 6, 5, 1, 4, 3 };
+        bubbleSort(unsorted);
+        printArrayOf(unsorted);
+    }
+    
+    public static int[] bubbleSort(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr.length - i; j++) {
+                if (arr[j + 1] < arr[j]) swap(j, j+1, arr);
+            }
+        }
+        return arr;
+    }
+
+    private static void swap(int i, int j, int[] arr) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    private static void printArrayOf(int[] arr) {
+        for (int value : arr) {
+            System.out.print(" " + value + " ");
+        }
+    }
+ }
+```
+
+Note the bounds of our for loops are different then they were for Selection Sort. The outer for loop runs until the counter reaches `arr.length`, but the nested for loop runs until the counter 
+reaches `arr.length - i`. This is due to the nature of the bubble sort algorithm. For each iteration of the outer loop, the largest element in the array is moved to the rightmost index. Thus it
+becomes sorted. Our inner loop will not need to check those elements, so we can end our inner loop an `i`th distance from the end of the array. (If this still doesn't make sense, try drawing out the
+state of the list at each iteration of the outer for loop and you should see the pattern),
+
 ## Insertion Sort
+
+```java
+public class Sort {
+
+    public static void main(String[] args) {
+        int[] unsorted = { 6, 5, 1, 4, 3 };
+        insertionSort(unsorted);
+        printArrayOf(unsorted);
+    }
+
+    private static int[] insertionSort(int[] arr) {
+        int j;
+        int element;
+        for (int i = 0; i < arr.length; i++) {
+            element = arr[i];
+            j = i - 1;
+            while (j >= 0 && arr[j] > element) {
+                arr[i] = arr[j];
+                j--;
+            }
+            arr[j + 1] = element;
+        }
+        return arr;
+    }
+
+    private static void printArrayOf(int[] arr) {
+        for (int value : arr) {
+            System.out.print(" " + value + " ");
+        }
+    }
+
+}
+
+```
 
 ## Merge Sort
 
+
+```java
+public class Sort {
+
+    public static void main(String[] args) {
+        int[] unsorted = { 6, 5, 1, 4, 3 };
+        mergeSort(unsorted);
+        printArrayOf(unsorted);
+    }
+
+    private static int[] mergeSort(int[] arr) {                     
+        if (arr.length <= 1) {
+            return arr;
+        }
+        int[] left = mergeSort(split(0, arr.length / 2, arr));
+        int[] right = mergeSort(split(arr.length / 2, arr.length, arr));
+
+        return merge(left, right, arr);
+    }
+
+    private static int[] split(int start, int end, int[] arr) {
+        int[] result = new int[end - start];
+        for (int i = start; i < end; i++) { 
+            result[i - start] = arr[i];             
+        }
+        return result;
+    }
+
+    private static int[] merge(int[] left, int[] right, int[] arr) {
+        int i = 0;
+        int j = 0;
+        while (i < left.length && j < right.length) {
+            if (left[i] < right[j]) {          
+                arr[i + j] = left[i]; 
+                i++;
+            } else {    
+                arr[i + j] = right[j]; 
+                j++;
+            }
+        }
+        while(i < left.length) {
+            arr[i + j] = left[i]; 
+            i++;
+        }
+        while (j < right.length) {
+            arr[i + j] = right[j]; 
+            j++;
+        }
+        return arr;
+    }
+
+    private static void printArrayOf(int[] arr) {
+        for (int value : arr) {
+            System.out.print(" " + value + " ");
+        }
+    }
+}
+
+```
+
 ## Quick Sort
+
+```java
+public class Sort {
+
+    public static void main(String[] args) {
+        int[] unsorted = { 6, 5, 1, 4, 3 };
+        quickSort(unsorted);
+        printArrayOf(unsorted);
+    }
+
+    public static int[] quickSort(int[] arr) {
+        return quickSort(arr, 0, arr.length - 1);
+    }
+
+    private static int[] quickSort(int[] arr, int left, int right) {
+        if (left < right) {
+            int pivotIndex = partition(left, right, arr);
+
+            quickSort(arr, left, pivotIndex - 1);
+            quickSort(arr, pivotIndex + 1, right);
+
+        }
+
+        return arr;
+    }
+
+    private static int partition(int left, int right, int[] arr) {
+        Random rand = new Random();
+        int pivotIndex = left + (rand.nextInt(right - left + 1));
+        int pivot = arr[pivotIndex];
+        swap(pivotIndex, right, arr);
+        int j = left; 
+        for (int i = left; i < right; i++) {
+            if (arr[i] <= pivot) { 
+                swap(i, j, arr);
+                j++;
+            }
+        }
+        swap(j, right, arr);
+        return j;
+    }
+
+    private static void swap(int i, int j, int[] arr) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    private static void printArrayOf(int[] arr) {
+        for (int value : arr) {
+            System.out.print(" " + value + " ");
+        }
+    }
+
+}
+
+```
