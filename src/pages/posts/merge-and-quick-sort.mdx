@@ -1,6 +1,6 @@
 ---
 slug: "merge-and-quick-sort"
-title: "Merge Sort and Quick Sort - A Review"
+title: "Merge Sort and Quick Sort"
 date: 2020-11-20
 author: molson
 tags:
@@ -17,6 +17,29 @@ Let's start with my favorite of the two, merge sort.
 
 ## Merge Sort
 
+Think of a list of 1,000,000 items. Then think of a list of 2 items. Which is easier to sort? Well what if we broke that 1,000,000 item list down into 500,000 lists of 2 items. 
+Would breaking the list up into sublists help us sort the list faster? 
+
+Merge sort uses this type of divide and conquer strategy. It takes the list and divides it into smaller and smaller lists. It sorts these smaller lists and then 
+merges the sorted sublists together. 
+
+Below is a visual of how this works: 
+
+![Merge Sort Gif](https://en.wikipedia.org/wiki/Merge_sort#/media/File:Merge-sort-example-300px.gif)
+
+Notice how you have two distinct steps in this algorithm: 
+1. Split lists in half over and over until you're down to list of size 1. 
+2. Merge these lists back together, sorting the elements as you merge. 
+
+Take a look at the whole thing in a single picture and see how this process can be represented as a graph or tree: 
+
+![Merge Sort Visual](https://en.wikipedia.org/wiki/Merge_sort#/media/File:Merge_sort_algorithm_diagram.svg)
+
+Hopefully these visuals give you an idea of how this algorithm can be implmented in Java. 
+
+### Implementation
+
+Let's check out the implementation below:
 
 ```java
 public class Sort {
@@ -76,6 +99,9 @@ public class Sort {
 }
 
 ```
+
+![Merge Sort Complexity Explained](https://www.google.com/imgres?imgurl=https%3A%2F%2Fvisualgo.net%2Fimg%2Fmerge.png&imgrefurl=https%3A%2F%2Fvisualgo.net%2Fbn%2Fsorting&tbnid=H9EmxH8oW1UcaM&vet=12ahUKEwiux87W55TtAhUVFjQIHapVDZcQMygAegUIARCoAQ..i&docid=QjJsiwOseP1U6M&w=1022&h=570&q=merge%20sort%20visual&ved=2ahUKEwiux87W55TtAhUVFjQIHapVDZcQMygAegUIARCoAQ)
+
 
 ## Quick Sort
 
