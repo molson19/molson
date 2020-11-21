@@ -29,7 +29,7 @@ Whenever you come across a sorting problem, always ask yourself what you are sor
 
 In our case, let's assume they are positive integers. 
 
-### 2. What is sorted order? Is it ascending or descending? 
+### 2. What is "sorted order"? Is it ascending or descending? 
 
 Ascending order means that elements to the left are smaller than elements to the right. Another way to say this is as we traverse along 
 the list, the elements ascend or get larger. This can be written as follows: ``` 0 <= i <= n - 1; array[i] <= array[i + 1]```
@@ -170,9 +170,24 @@ the familiar nested for loops.
 Note the bounds of our for loops are different then they were for Selection Sort. The outer for loop runs until the counter reaches `arr.length`, but the nested for loop runs until the counter 
 reaches `arr.length - i`. This is due to the nature of the bubble sort algorithm. For each iteration of the outer loop, the largest element in the array is moved to the rightmost index. Thus it
 becomes sorted. Our inner loop will not need to check those elements, so we can end our inner loop an `i`th distance from the end of the array. (If this still doesn't make sense, try drawing out the
-state of the list at each iteration of the outer for loop and you should see the pattern),
+state of the list at each iteration of the outer for loop and you should see the pattern).
+
+The runtime complexity is the same as selection sort:  O(n^2) in the worst case. 
 
 ## Insertion Sort
+
+Next up in the ranks of sorting algorithms is Insertion Sort--an algorithm that may be the most intuitive of the three so far. Insertion sort takes a look at each item in the list
+and inserts it into the correct spot in the list to achieve sorted order. 
+
+![Insertion Sort](https://upload.wikimedia.org/wikipedia/commons/0/0f/Insertion-sort-example-300px.gif)
+
+Think about how this could be implemented in Java. We'll need one for loop iterating over the whole list, but how will we achieve the back-tracking for each element to find its 
+correct spot in the sorted list? Also, notice that as we find the correct spot for each element, that we'll have to shift all the elements in the array up a position as we 
+move the given item back. We can achieve this using a correctly tailored while loop. 
+
+### Implementation 
+
+Check out the implementation of Insertion Sort below. 
 
 ```java
 public class Sort {
@@ -190,7 +205,7 @@ public class Sort {
             element = arr[i];
             j = i - 1;
             while (j >= 0 && arr[j] > element) {
-                arr[i] = arr[j];
+                arr[j + 1] = arr[j];
                 j--;
             }
             arr[j + 1] = element;
@@ -208,123 +223,35 @@ public class Sort {
 
 ```
 
-## Merge Sort
+The key to this implementation is getting the numbers right. There's room for off-by-one errors everywhere. We start with two pointers: `element` is the item we are evaluating to see
+where it best belongs in the list and `j` is our pointer to back track along the list to find the correct spot to insert `element`. 
+
+Our first for loop is straight forward. It loops from one end of the list to the other. Inside our for loop we set `element` to the value in the array at index `i`. Then we set 
+`j` to `i -1`. This way we can compare `element` with the items behind it. As `i` increments and we look at items further down the list, we'll have to back track further and further. This is
+where the while loop comes in. While our `j` counter is greater than 0 (we haven't gone off the frotnend of the list) and the value in the array at index `j` is 
+greater than element, then we haven't found the right spot to insert element. So we shift the item at `arr[j]` to index `j + 1` and then we decrement `j`. This achieves the shifting
+of items up the array as we backtrack. Once the condition in our while loop fails, we know we've found the index to place `element`. We set it at the index `j + 1`. 
+
+The algorithm continues this process for all items in the array, ending with a sorted list. 
+
+Again, as we've seen with the above algorithms, Insertion Sort has a nested loop structure. If you think about the worst possible case (the array being reverse sorted) then this 
+algorithm would take O(n^2) time to run, where n is the size of the array. 
+
+### Summary
+
+Let's look at the runtime of all the algorithms we've seen in this post. 
+
+|---|---|---|---|
+|   | Selection | Bubble | Insertion |
+| Best Case | O(n^2) | O(n) | O(n) |
+| Avg. Case | O(n^2) | O(n^2) | O(n^2) |
+| Worst Case | O(n^2) | O(n^2) | O(n^2) |
+
+In the average and worst cases, these algorithms are all O(n^2), which if you check out the time complecomplexity curves below, is not very good. 
+
+![Big-O Complexity Curves](https://mattjmatthias.co/articles/dev-training-big-o-notation#&gid=1&pid=1)
 
 
-```java
-public class Sort {
+### Conlcusion 
 
-    public static void main(String[] args) {
-        int[] unsorted = { 6, 5, 1, 4, 3 };
-        mergeSort(unsorted);
-        printArrayOf(unsorted);
-    }
-
-    private static int[] mergeSort(int[] arr) {                     
-        if (arr.length <= 1) {
-            return arr;
-        }
-        int[] left = mergeSort(split(0, arr.length / 2, arr));
-        int[] right = mergeSort(split(arr.length / 2, arr.length, arr));
-
-        return merge(left, right, arr);
-    }
-
-    private static int[] split(int start, int end, int[] arr) {
-        int[] result = new int[end - start];
-        for (int i = start; i < end; i++) { 
-            result[i - start] = arr[i];             
-        }
-        return result;
-    }
-
-    private static int[] merge(int[] left, int[] right, int[] arr) {
-        int i = 0;
-        int j = 0;
-        while (i < left.length && j < right.length) {
-            if (left[i] < right[j]) {          
-                arr[i + j] = left[i]; 
-                i++;
-            } else {    
-                arr[i + j] = right[j]; 
-                j++;
-            }
-        }
-        while(i < left.length) {
-            arr[i + j] = left[i]; 
-            i++;
-        }
-        while (j < right.length) {
-            arr[i + j] = right[j]; 
-            j++;
-        }
-        return arr;
-    }
-
-    private static void printArrayOf(int[] arr) {
-        for (int value : arr) {
-            System.out.print(" " + value + " ");
-        }
-    }
-}
-
-```
-
-## Quick Sort
-
-```java
-public class Sort {
-
-    public static void main(String[] args) {
-        int[] unsorted = { 6, 5, 1, 4, 3 };
-        quickSort(unsorted);
-        printArrayOf(unsorted);
-    }
-
-    public static int[] quickSort(int[] arr) {
-        return quickSort(arr, 0, arr.length - 1);
-    }
-
-    private static int[] quickSort(int[] arr, int left, int right) {
-        if (left < right) {
-            int pivotIndex = partition(left, right, arr);
-
-            quickSort(arr, left, pivotIndex - 1);
-            quickSort(arr, pivotIndex + 1, right);
-
-        }
-
-        return arr;
-    }
-
-    private static int partition(int left, int right, int[] arr) {
-        Random rand = new Random();
-        int pivotIndex = left + (rand.nextInt(right - left + 1));
-        int pivot = arr[pivotIndex];
-        swap(pivotIndex, right, arr);
-        int j = left; 
-        for (int i = left; i < right; i++) {
-            if (arr[i] <= pivot) { 
-                swap(i, j, arr);
-                j++;
-            }
-        }
-        swap(j, right, arr);
-        return j;
-    }
-
-    private static void swap(int i, int j, int[] arr) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-
-    private static void printArrayOf(int[] arr) {
-        for (int value : arr) {
-            System.out.print(" " + value + " ");
-        }
-    }
-
-}
-
-```
+In my next post, we'll look at [Merge Sort and Quick Sort](https://molson.dev/posts/merge-and-quick-sort), two of the most ubiquitous sorting algorithms in computer science. 
