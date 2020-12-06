@@ -13,4 +13,8 @@ tags:
     name: Spring Boot
   - slug: java
     name: Java
+  - slug: algorithms
+    name: algorithms
+  - slug: data-structures
+    name: Data Structures
 

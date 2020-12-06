@@ -1,0 +1,121 @@
+---
+slug: "common-computer-science-algorithms"
+title: "Common Computer Science Algorithms"
+date: 2020-12-04
+author: molson
+tags:
+  - java
+  - algorithms
+---
+
+# Greedy Algorithms
+
+A "greedy" algorithm is a type of algorithm where you build the solution piece by piece. It sets a rule for
+which elements to add to the solution at each step in the algorithm. This could be minimizing a cost or maximizing a
+count for instance. The algorithm continues step-by-step evaluating elements based on the rule until it reaches the 
+end of it's input data. 
+
+Sometimes, this doesn't always find the correct solution. Only certain problems can be solved by greedy algorithms.
+
+There are two propeties needed in order for a greedy algorithm to be used to solve a problem: 
+1. __Greedy choice__: A global (or overall) optimal solution can be found by selecting the optimal solution at each step in the algorithm.
+2. __Optimal substructure__: An optimal substructure exists if an optimal soltion to the entire problem contains the 
+optimal soltions to all sub-problems. 
+
+Greedy algorithms only work on problems where at every step, there is a choice that is optimal for the problem up to that step, and after the final step, 
+the algorithm produces the optimal solution of the complete problem. 
+
+Read that a few times if it doesn't make sense. 
+
+## Example: 
+
+Let's create a change machine that takes in a given amount of money and returns the amount separated into as few coins as possible. 
+This should be returned as a list of coins which sum to the amount. 
+
+```java
+public class ChangeMachine {
+    public static  ArrayList<Integer> getMinCoins(int amount)  {
+        
+    }
+}
+```
+
+Right away you see the rule for this problem: the minimum number of coins must be used when making change for the input amount. 
+
+Now let's say the coins available to us are quarters, dimes, nickels, and pennies. So we'd have these options:
+
+```java
+private static final int[] coins = { 25, 10, 5, 1 };
+```
+
+Say our amount is 37 cents. How would we go about generating the change? Pretty simply, we could start with the largest coin and subtract it
+from the amount. If at any step, the amount is less than a coin value, then we move to a smaller coin. We repeat, subtracting from the 
+amount until the amount is 0. 
+
+So for 37 cents, we'd subtract the largest coin, 25, and add the 25 to our results list. Then amount would
+be 12. 12 is less than 25 so we'd need to move to our next smaller coin, the dime. Subtracting 10 from 12 and we get 2. 2 is less than 10 and
+also less than 5, so we move to the penny. 2 pennies can be used to make 2 cents. Thus we're left with ` [25, 10, 1, 1]` for our change. 
+
+Is this a greedy algorithm? It is. Look at each step in the algorithm. At each step, we take the largest coin possible that fits into our amount. We
+can do this at every step. And once we get to the last step, the resulting array of change is actually the optimal solution to the entire problem. So
+both greedy choice and optimal substrucutre are present. 
+
+Let's see the solution: 
+
+```java
+public class ChangeMachine {
+    public static int [] coins = {25, 10, 5, 1}; 
+
+    public static void main(String[] args) {
+        int amount = 37;
+        System.out.println(amount + " cents can be broken into the minimum number of coins as: " + getMinCoins(amount));
+    }
+
+    public static  ArrayList<Integer> getMinCoins(int amount)  {       
+      ArrayList<Integer> change = new ArrayList<Integer>();
+      int i = 0;
+      while (i < coins.length) {    
+        int coin = coins[i];        
+        if (coin <= amount) {       
+          amount = amount - coin;   
+          change.add(coin);         
+        } else {
+          i++;                     
+        }
+      }
+      return change;      
+    }
+}
+```
+
+Output would be
+```bash
+37 cents can be broken into the minimum number of coins as: [25, 10, 1, 1]
+```
+
+There you have a greedy algorithm. The above solution uses esentially a nested while loop, so our runtime complexity would be O(n^2) 
+where n is the number of available coins. We can actually solve this problem more efficiently, using Dynamic Programming--the next algorithm
+we'll look at. 
+
+# Dynamic Programming 
+
+wip...
+
+# Divide and Conquer
+
+wip...
+
+# Graph Algorithms
+
+wip...
+
+# More
+
+At this point you may be thinking: "Wait a second, what about sorting and searching algorithms". Since sorting and
+searching are so important in software development, I felt that these algorithms deserved their own posts. Check them out for a 
+full review of searching and sorting in Java: 
+1. [Sorting - A Review](https://molson.dev/posts/sorting-algorithms)
+2. [Searching Algorithms - A Review](https://molson.dev/posts/searching-algorithms)
+
+# References
+- Greedy Algorithms: [brilliant.org](https://brilliant.org/wiki/greedy-algorithm/)

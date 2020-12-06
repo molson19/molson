@@ -1,0 +1,272 @@
+---
+slug: "design-patterns"
+title: "Design Patterns - A Review"
+date: 2020-10-29
+author: molson
+tags:
+  - java
+---
+
+Deisgn patterns are tools that developers can use when designing distributed applications. Today, we'll look at a few well known design patterns
+and how they're implemented in Java. 
+
+## Builder Pattern
+
+The intent of the builder pattern is to separate the construction of a complext object from its representation
+such that the same construction process can create different representations. It's essentially an abstraction that 
+creates a more flexible object creation interface. 
+
+__What problem does it solve?__
+
+Think about constructors in Java. If I want to make a object via the obnjects constructor, the constructor has to be 
+declared and take the fields of the object as parameters. For example, the Product constructor needs parameters for 
+each of its fields. 
+
+```java
+
+public class Product {
+
+
+  private String id;
+  private String name;
+  private double price; 
+  private String description; 
+
+  public Product(String id) {
+    this.id = id;
+  }
+
+  public Product(String id, String name) {
+    this.id = id;
+    this.name = name;
+  }
+
+  public Product(String id, String name, double price) {
+    this.id = id;
+    this.name = name;
+    this.price = price;
+  }
+
+  // getters, setters, object methods
+}
+
+```
+
+Notice that for different representations of a Product we need multiple contructors, each with a varying 
+number of parameters. When the parameter number gets large, say 4+, then it can become difficult 
+to remember which parameters are required and in what order when constructing an object. 
+This is known as the [Telescoping Constructor Anti-pattern](http://www.captaindebug.com/2011/05/telescoping-constructor-antipattern.html#.X7NUvhNKh_k) and is what the builder pattern 
+was made to solve. 
+
+The builder pattern decouple object creation and allows for a fluid object creation syntax where the same
+object creation mechanism can create different represetnations of the same object. 
+
+```java
+
+public class Product {
+
+  private String id;
+  private String name;
+  private double price; 
+  private String description; 
+
+  private Product(ProductBuilder builder) {
+    this.id = builder.id;
+    this.name = builder.name;
+    this.price = builder.price;
+    this.description = builder.description;
+  }
+
+  public static class ProductBuilder {
+
+    private String id;
+    private String name;
+    private double price; 
+    private String description; 
+
+    public ProductBuilder builder() {
+      return this;
+    }
+
+    public ProductBuilder id(String id) {
+      this.id = id;
+      return this;
+    }
+
+    public ProductBuilder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public ProductBuilder price(double price) {
+      this.price = price;
+      return this;
+    }
+
+    public ProductBuilder description(String description) {
+      this.description = description
+    }
+
+    public static Product build() {
+      return new Product(this);
+    }
+  }
+}
+```
+
+The above can be used as: 
+
+```java
+
+Product mac = ProductBuilder.builder()
+    .id("123")
+    .name("Macbook")
+    .price(949.99)
+    .description("A sleek, fast, shiny, 15 inch Macbook Pro computer.")
+    .build();
+
+Product pc = ProductBuilder.builder()
+    .id("456")
+    .name("Personal Computer")
+    .price(549.99)
+    .description("A boring computer created by Microsoft.")
+    .build();
+
+System.out.println("You can buy a " + pc.getName() + "or a " + mac.getName);
+```
+
+Notice that you can leave fields out in the builder pattern while using the same builder. 
+
+Now, you may say "well thats a lot of bopiler pl"
+
+## Data Access Object
+
+A data access object is meant to provide an abstract interface to some tupe of database or other persistence mechanism. It's intention is to define the API to a datastore
+without implementing the datastore. Then, the data access interface can be implemented elsehwere or in multiple different ways. This provides flexibility to an 
+application's architecture. 
+
+__Example__
+
+A real world example: There is a set of products that need to be saved in a datastore for my e-commerce application. In addition, I'll need an entire set of create, read, write, and remove 
+operations so that my application can interact with my products. In this example, a data access object can be created to define the API for interacting with these products. 
+
+Below is my product entity which i want to persist and interact with using CRUD (create, read, update, and delete) operations.
+
+```java
+import lombok.Data;
+
+@Data
+public class Product {
+
+  private String id;
+  private String name;
+  private double price; 
+  private String description; 
+
+}
+
+```
+
+My data access object would look like the below: 
+
+```java
+
+public interface ProductDataAccess {
+
+  Stream<Product> getAll();
+
+  Optional<Product> getProductById(String id);
+
+  Product updateProduct(Product product);
+
+  void deleteProductById(String id);
+}
+```
+
+The Data Access interface can then be implemented in multiple ways. 
+
+```java
+
+public class InMemoryProductRepository implements ProductDataAccess {
+
+  private final Map<String, Product> inMemoryProductStore = new HashMap<>();
+
+  Stream<Product> getAll() {
+    return inMemoryProductStore.values().stream();
+  }
+
+  Optional<Product> getProductById(String id) {
+    return inMemoryProductStore.get(id);
+  }
+
+  Product updateProduct(Product product) {
+    inMemoryProductStore.set(product.getId(), product);
+    return inMemoryProductStore.get(product.getId());
+  }
+
+  void deleteProductById(String id) {
+    inMemoryProductStore.set(id, null);
+  }
+}
+
+public class ProductSQLRepository implements ProductDataAccess {
+
+  private final DataStore dataStore;
+
+  public ProductRepository(DataStore dataStore) {
+    this.dataStore = dataStore;
+  }
+
+  // Implement methods using SQL data store
+}
+
+public class ProductMongoDbRepository implements ProductDataAccess {
+
+  private final MongoRepository dataStore;
+
+  public ProductRepository(MongoRepository dataStore) {
+    this.dataStore = dataStore;
+  }
+
+  // Implement methods using MongoRepository data store. 
+}
+
+```
+
+__Value__ 
+
+This is where the beauty of the Data Access Object comes in. It allows the application to define as an interface the operations that the application needs in order to
+interact with its entities. Then the actual persistence mechanism can be implemented in any way possible, as long as the implementation conforms to the API. 
+
+This is powerful. Think of a brand new project that you're working on. The requirements are vague, the data model is not quite hashed out. How do you make a decision
+on a data store at this time? Should you use a relational model or NoSQL? What database offerings will provide you the best performance for your data? The answer
+is: you don't know. And a data access interface allows you to delay that decision as long as you'd like because you can implement the data access with any implementation you
+like. Early in the project, simply use an in-memory map. As your application evolves you may see relational cahracteristics emerge--so switch to a SQL database. Further 
+down the road, you may find your assumptions were wrong and that a document store is more efficient. The change is easy. You can create another implementation alongside 
+your existing implementation, test and verify its efficacy, and then switch the implmentation with a single line code change. 
+
+Not only that, but a Data Access Object consolidates the point of data layer access to one class. It allows you to clearly define how your application will interact with 
+the data layer, making your code more understandable and maintainable. 
+
+This is extremely powerful and shows the benefit of clearly defining interfaces in your application code. It also leads into Dependency Inversion and the Hexagonal Architecture, 
+topics which I cover in other articles. 
+
+## Abstract Factory Pattern 
+
+The goal of the abstract factory pattern is to have an interface for creating groups of related or dependent objects without specifying their concrete classes. This 
+interface acts as a factory for creating objects without having to be fully dependent on the concrete impmentations of the objects themselves. 
+
+### Example: 
+wip...
+### Class diagram: 
+wip...
+### When to use it? 
+
+The abstract fatory pattern is applicable when: 
+- you need a run-time value to construct a particular dependency. 
+
+
+## Resources
+
+Much more information on these patterns can be found online. I've derived much of the above from degree and 
+taken from my career as a software engineer. You can also find a useful overview of widely used java design patterns at [java-design-patterns.com](https://java-design-patterns.com/patterns/).

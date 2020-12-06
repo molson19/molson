@@ -5,6 +5,7 @@ date: 2020-11-20
 author: molson
 tags:
   - java
+  - algorithms
 ---
 
 In my previous article about sorting algorithms we looked at the basic sorting algorithms in computer science: Selection Sort, Bubble Sort, and Insertion Sort. These
@@ -100,10 +101,51 @@ public class Sort {
 
 ```
 
+The split portion of this algorithm is pretty easy to grasp. We split the array in half and pass the left half into the `mergeSort()` function and
+the right half into the `mergeSort()` algorithm. Our `split()` method takes a start index, an end index, and an array to split. The implementation is
+prtty simple. Another option instead of implementing `split()` yourself is to use the built in `Arrays.copyOfRange()` method which does the exact same thing. 
+
+So once we split our array the algorithm recurses, using the same method over and over until we reach our base case. The base case of course, is when
+the passed in array has one or less elements. That's when we reach the bottom of the tree. Once we've reached the base case we come back up the recursive stack
+and our method has a `right` array and a `left` array. This is where we merge the two arrays together into sorted order. 
+
+We pass the left, right, and original array off to a helper method called `merge()`. Inside `merge()` we declare two pointers, one for our left array
+and one for our right array. The while loop checks the elements in the left and right arrays at their pointers and compares them. Whichever element is lower
+is added to the `i + j` index of our orginal array. This process continues until we check all elements in left or in right. At this point, if an array still
+has elements to check (it's counter is less than its length) then all of these values can be filled into the end of the original array `arr`. 
+
+In the end, the implementation does exactly what you'd expect from the visual above, splitting until we've reached arrays of size one, and then merging these arrays
+back together in sorted order. 
+
+Merge Sort is an O(n*log(n)) complexity algorithm in all cases. How do we arive at that number? Anytime we are splitting in half and recursing, the algorithm
+has O(log(n)) runtime. So the splitting of the array until halves ends up taking O(log(n)) time. Then the merge function has a set of while loops in it. Each time this 
+method is called it loops `n` times, where n is the size of the array `arr` that is passed in. Thus, for every step back up the recursive stack, `merge()` runs `n` times.  
+So O(log(n) as the algorithm recusrse down the stack, and O(n) as it recurses up the stack. Thus the overall complexity of `mergeSort()` is O(n*log(n)). 
+
+Also note, in my implmentation above I return a copy of the orignal array. Thus the algorithm is not very memory efficient, but you can implement mergeSort to 
+update the array in memory instead of making a copy. This would be the ideal implementation for memory efficiency. 
+
+For more help visualizing how Merge Sort is O(n*log(n)) check out the image below: 
+
 ![Merge Sort Complexity Explained](https://www.google.com/imgres?imgurl=https%3A%2F%2Fvisualgo.net%2Fimg%2Fmerge.png&imgrefurl=https%3A%2F%2Fvisualgo.net%2Fbn%2Fsorting&tbnid=H9EmxH8oW1UcaM&vet=12ahUKEwiux87W55TtAhUVFjQIHapVDZcQMygAegUIARCoAQ..i&docid=QjJsiwOseP1U6M&w=1022&h=570&q=merge%20sort%20visual&ved=2ahUKEwiux87W55TtAhUVFjQIHapVDZcQMygAegUIARCoAQ)
 
+This is about as good as it gets as far as sorting alogirthms go, but there is another commonly used algorithm with equal efficiency.
 
 ## Quick Sort
+
+Quick Sort is probably the most difficult sorting algorithm to implement. Like Merge Sort, it takes advantage of recursion, but instead of dividing
+and conquering, quick sort uses a pivot values to aid in sorting all the elements in the array. Let's see how it works. 
+
+1. With an array of n element, pick a pivot value at random. 
+2. Partition the array around this pivot, such that all elements less than the pivot are to the left of the pivot and all elements greater than the pivot 
+are to the right. These partitions can be unsorted. 
+3. Repeat recursively with each subarray: that of elements less than the pivot (elements to the left) and that of elements greater than the pivot (elements to the right). 
+
+Take a look at the visual and try to see where each step comes in. 
+
+![Quick Sort Visual](https://upload.wikimedia.org/wikipedia/commons/9/9c/Quicksort-example.gif)
+
+With the steps in mind let's take a look at the implementation. 
 
 ```java
 public class Sort {
@@ -161,3 +203,26 @@ public class Sort {
 }
 
 ```
+
+In contrast to my Merge Sort implementation this implementation sorts the array in place instead of returning an array copy. 
+
+There are two sections: partition and recurse. In the partition section, we choose a pivot at random. We swap the pivot and the 
+right most value in the passed in array so that the pivot is all the way to the right of our array. This makes it easy for our
+algorithm to walk through the other elements in the array from left to right and move them around based on their relationship to the
+pivot. 
+
+The for loop in the partition method does just that. With a counter `j` which is initalized to `left` (or the first element in the 
+passed in array) we separate the values in the array based on whether their less than or greater than our pivot. We keep track of this 
+division with our counter `j`. So if a value is less than our equal to our pivot, we swap it with the value at `j` and increment `j`. Once 
+done with this process, we insert our pivot (which is currently at `right`) into the correct spot in the array, between the values 
+less than and greater than it. 
+
+Our concatenate section is very thin, as it simply calls `quickSort()` on the section of the array to the left of the pivot and 
+on the section to the right of the pivot. This essentially sorts the left sub array and the righ sub array using the same algorithm. 
+
+Once complete, the array is sorted. 
+
+# Resources
+
+There are tons of other resources out there to learn about these sorting algorithms. I gained my knowledge through my degree, but also 
+used [Educative](https://www.educative.io/learn) to brush up on my algorithm skills. Check out their course on algorithms [here](https://www.educative.io/module/algorithms-in-java).
