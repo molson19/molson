@@ -1,7 +1,7 @@
 ---
 slug: "design-patterns"
 title: "Design Patterns - A Review"
-date: 2020-10-29
+date: 2020-12-14
 author: molson
 tags:
   - java
@@ -251,22 +251,166 @@ the data layer, making your code more understandable and maintainable.
 This is extremely powerful and shows the benefit of clearly defining interfaces in your application code. It also leads into Dependency Inversion and the Hexagonal Architecture, 
 topics which I cover in other articles. 
 
-## Abstract Factory Pattern 
+## Ambassador Pattern
 
-The goal of the abstract factory pattern is to have an interface for creating groups of related or dependent objects without specifying their concrete classes. This 
-interface acts as a factory for creating objects without having to be fully dependent on the concrete impmentations of the objects themselves. 
+The goal of the ambassador pattern is to provide helper functionality to a client that is calling a shared resource that cannot be easily updated. 
+This helper functionality acts as an ambassador when the client communicates with the service, handling things like retries, latency checks, 
+client-side rate-limiting, and logging. The ambassador is designed to encapsulate all of this helper functionality in a client-side 
+service that can be used alongside any client calling the shared resource. 
 
-### Example: 
-wip...
-### Class diagram: 
-wip...
-### When to use it? 
+Notes: 
+- Typically sued when calling a shared legacy resource that cannot be updated or easily changed. 
+- The ambassador is usually co-located with the client. 
 
-The abstract fatory pattern is applicable when: 
-- you need a run-time value to construct a particular dependency. 
+__When to use it__
 
+You would use the ambassador pattern when you have some functionality needed everytime you call a shared resource. You can create
+an ambassador class that each of your clients can use when requesting the resource. This allows for a streamlined process when 
+each client makes its request. 
 
-## Resources
+If for every client that calls a shared resource you need to do a certain number of things, say add logging statements, publish monitoring
+metrics like timers our counters, or perform back-offs and retries, this is when you'd want to create an ambassador. 
 
-Much more information on these patterns can be found online. I've derived much of the above from degree and 
-taken from my career as a software engineer. You can also find a useful overview of widely used java design patterns at [java-design-patterns.com](https://java-design-patterns.com/patterns/).
+__Example__
+
+Say that you have some service that is heavily shared across multiple clients
+```java
+interface CoolServiceApi {
+    long performSomeOperation(int value) throws Exception;
+}
+
+@Slf4j
+public class CoolSharedService implements CoolServiceApi {
+
+    private static CoolSharedService service = null;
+
+    static synchronized CoolSharedService getService() {
+        if (service == null) {
+            service = new CoolSharedService();
+        }
+        return service;
+    }
+
+    private CoolSharedService() {}
+
+    @Override
+    public long performOperation(int value) {
+        long waitTime = (long) Math.floor(Math.random() * 1000);
+        try {
+            sleep(waitTime);
+        } catch (InterruptedException e) {
+            LOGGER.error("Thread sleep interrupted", e);
+        }
+        return waitTime >= 200 ? value * 10 : -1;
+    }
+}
+```
+A service ambassador can be used to dd monitoring and logging on top of the requests to the CoolSharedService:
+
+```java
+
+@Slf4j
+public class ServiceAmbassador implements CoolServiceApi {
+
+  private static final int MAX_RETIRES = 3;
+  private static final int DELAY_MS = 3000;
+  private static final int FAILURE = -1;
+
+  ServiceAmbassador() {}
+
+  @Override
+  public long performOperation(int value) {
+    return callWithRetiresAndLatencyChecks(value);
+  }
+
+  private long requestAndCheckLatency(int value) {
+    var startTime = System.currentTimeMillis();
+    var result = CoolSharedService.getService().performOperation(value);
+    var timeTaken = System.currentTimeMillis() - startTime;
+    LOGGER.info("Time taken (ms): " + timeTaken);
+    return result;
+  }
+
+  private long callWithRetiresAndLatencyChecks(int value) {
+    var retries = 0;
+    var result = (long) FAILURE;
+    var isSuccess = true;
+
+    while (retries <= MAX_RETIRES && !isSuccess) {
+      result = requestAndCheckLatency(value);
+      if (result == (long) FAILURE) {
+        LOGGER.info("Failed to reach remote: (" + (i + 1) + ")");
+        retries++;
+        delayFor(DELAY_MS);
+      } 
+    }
+    return result;
+  }
+
+  private void delayFor(int ms) {
+    try {
+      sleep(ms);
+    } catch (InterruptedException e) {
+      LOGGER.error("Thread sleep state interrupted", e);
+    }
+  }
+}
+```
+Our client would then have a service ambassador that it can use to interact with the remove service: 
+```java
+
+@Slf4j
+public class CoolClient {
+
+  private final ServiceAmbassador serviceAmbassador = new ServiceAmbassador();
+
+  long getCoolStuff(int value) {
+    var result = serviceAmbassador.performOperation(value);
+    LOGGER.info("Service result: " + result);
+    return result;
+  }
+}
+```
+
+Now, if we had an application that created two clients, like so:
+
+```java
+public class App {
+  public static void main(String[] args) {
+    var client1 = new CoolClient();
+    var client2 = new CoolClient();
+
+    client1.getCoolStuff(17);
+    client2.getCoolStuff(75);
+  }
+}
+```
+you might get the below output: 
+
+```bash
+Time taken (ms): 111
+Service result: 120
+Time taken (ms): 931
+Failed to reach remote: (1)
+Time taken (ms): 665
+Failed to reach remote: (2)
+Time taken (ms): 538
+Failed to reach remote: (3)
+Service result: -1
+```
+
+Notice that we essentially get logging, retries, and latenchy tracking built in to our requests to the CoolSharedService. This is extremely
+useful, especially if we want a streamlined monitoring solution for all of our clients that call the CoolSharedService. We could
+bundle the ServiceAmbassador into a `.jar` or other reusuable component so that other developers can include it in the project
+and use it whenever they call the CoolSharedService. 
+
+__Value__
+
+The value of the ambassador pattern is plain to see, especially when you look at it from a microservices perspective. Say you have
+multiple containers running in your cluster, split out based on responsibility and functionality. Now say that all of these containers
+at some point in their runtime need to request a shared service. Each one of these containers can use the same ambassador when doing so. Then
+all of their requests can take advantage of the logging, monitoring, retries, etc. when making these external requests. 
+
+The ambassador pattern is a representation of the DRY principal. It allowsd you to consolidate the helper functionality around calling
+an external service and centralize it into a reusable and shareable component. This is improving code reuse and reducing code duplication at its
+finest. 
